@@ -2,6 +2,7 @@ package veniceai
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -51,42 +52,36 @@ func WithHTTPClient(httpClient *http.Client) Option {
 
 // NewClient creates a Venice.ai API client authenticated with the given API key.
 func NewClient(apiKey string, opts ...Option) (*Client, error) {
-	cfg := &clientConfig{baseURL: DefaultBaseURL}
+	if apiKey == "" {
+		return nil, errors.New("veniceai: API key must not be empty")
+	}
+
+	cfg := &clientConfig{
+		baseURL:    DefaultBaseURL,
+		httpClient: http.DefaultClient,
+	}
 	for _, opt := range opts {
 		opt(cfg)
 	}
 
-	// Build openai-go client.
-	openaiOpts := []option.RequestOption{
-		option.WithAPIKey(apiKey),
-		option.WithBaseURL(cfg.baseURL),
-	}
-	if cfg.httpClient != nil {
-		openaiOpts = append(openaiOpts, option.WithHTTPClient(cfg.httpClient))
-	}
-
 	// Build generated Venice API client with Bearer auth.
-	apiOpts := []api.ClientOption{
-		api.WithRequestEditorFn(bearerAuth(apiKey)),
-	}
-	if cfg.httpClient != nil {
-		apiOpts = append(apiOpts, api.WithHTTPClient(cfg.httpClient))
-	}
-	apiClient, err := api.NewClientWithResponses(cfg.baseURL, apiOpts...)
+	apiClient, err := api.NewClientWithResponses(cfg.baseURL,
+		api.WithHTTPClient(cfg.httpClient),
+		api.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
+			req.Header.Set("Authorization", "Bearer "+apiKey)
+			return nil
+		}),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("veniceai: creating API client: %w", err)
 	}
 
 	return &Client{
-		OpenAI: openai.NewClient(openaiOpts...),
-		API:    apiClient,
+		OpenAI: openai.NewClient(
+			option.WithAPIKey(apiKey),
+			option.WithBaseURL(cfg.baseURL),
+			option.WithHTTPClient(cfg.httpClient),
+		),
+		API: apiClient,
 	}, nil
-}
-
-// bearerAuth returns a request editor that sets the Authorization header.
-func bearerAuth(apiKey string) api.RequestEditorFn {
-	return func(_ context.Context, req *http.Request) error {
-		req.Header.Set("Authorization", "Bearer "+apiKey)
-		return nil
-	}
 }

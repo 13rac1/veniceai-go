@@ -1,0 +1,6 @@
+.env
+.env.*
+*.key
+*.pem
+.swagger-patched.yaml
+.DS_Store

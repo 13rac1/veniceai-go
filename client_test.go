@@ -1,7 +1,6 @@
 package veniceai_test
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,16 +9,14 @@ import (
 )
 
 // modelsJSON is a minimal valid response for the /models endpoint.
-var modelsJSON = map[string]any{"object": "list", "data": []any{}}
+var modelsJSON = []byte(`{"object":"list","data":[]}`)
 
-func newTestServer(t *testing.T) *httptest.Server {
+func writeModels(t *testing.T, w http.ResponseWriter) {
 	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(modelsJSON); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}))
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := w.Write(modelsJSON); err != nil {
+		t.Errorf("writeModels: %v", err)
+	}
 }
 
 func TestNewClient(t *testing.T) {
@@ -32,14 +29,18 @@ func TestNewClient(t *testing.T) {
 	}
 }
 
+func TestNewClientEmptyKey(t *testing.T) {
+	_, err := veniceai.NewClient("")
+	if err == nil {
+		t.Fatal("NewClient(\"\") should return an error")
+	}
+}
+
 func TestWithBaseURL(t *testing.T) {
 	var called bool
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		called = true
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(modelsJSON); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		writeModels(t, w)
 	}))
 	defer ts.Close()
 
@@ -59,7 +60,9 @@ func TestWithBaseURL(t *testing.T) {
 
 func TestWithHTTPClient(t *testing.T) {
 	var called bool
-	ts := newTestServer(t)
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		writeModels(t, w)
+	}))
 	defer ts.Close()
 
 	custom := &http.Client{
@@ -90,10 +93,7 @@ func TestBearerTokenSent(t *testing.T) {
 	var receivedAuth string
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		receivedAuth = r.Header.Get("Authorization")
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(modelsJSON); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
+		writeModels(t, w)
 	}))
 	defer ts.Close()
 

@@ -6,8 +6,7 @@ PATCHED := .swagger-patched.yaml
 # Generate API client and types from the Venice OpenAPI spec.
 # Applies swagger.patch to resolve duplicate type names before generation.
 generate:
-	cp $(SWAGGER) $(PATCHED)
-	patch -p1 $(PATCHED) swagger.patch --output=$(PATCHED)
+	patch -p1 $(SWAGGER) swagger.patch --output=$(PATCHED) || (rm -f $(PATCHED) && exit 1)
 	go tool oapi-codegen --config oapi-codegen.yaml $(PATCHED)
 	@rm -f $(PATCHED)
 
