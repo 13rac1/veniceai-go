@@ -1,0 +1,10 @@
+--- a/veniceai-api-docs/swagger.yaml
++++ b/veniceai-api-docs/swagger.yaml
+@@ -1280,6 +1280,7 @@
+           type: object
+           properties:
+             effort:
++              x-go-type-name: ChatCompletionReasoningObjectEffort
+               type: string
+               enum:
+                 - none
