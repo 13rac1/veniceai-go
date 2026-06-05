@@ -1,0 +1,3 @@
+[submodule "veniceai-api-docs"]
+	path = veniceai-api-docs
+	url = https://github.com/veniceai/api-docs.git
