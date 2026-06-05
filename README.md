@@ -42,19 +42,15 @@ func main() {
 	}
 	fmt.Println(chat.Choices[0].Message.Content)
 
-	// Venice-specific endpoints (video, billing, characters, augment, etc.)
-	models, err := client.API.ListModelsWithResponse(ctx, nil)
+	// Venice-specific endpoints use generated types from the api package
+	resp, err := client.API.GenerateImageWithResponse(ctx, nil, api.GenerateImageJSONRequestBody{
+		Model:  "fluently-xl",
+		Prompt: "a cat in space",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(string(models.Body))
-
-	// Venice image styles
-	styles, err := client.API.GetImageStylesWithResponse(ctx)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(string(styles.Body))
+	fmt.Println(resp.StatusCode())
 }
 ```
 
