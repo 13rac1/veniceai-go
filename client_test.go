@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	veniceai "github.com/13rac1/veniceai-go"
+	"github.com/13rac1/veniceai-go"
 )
 
 // modelsJSON is a minimal valid response for the /models endpoint.

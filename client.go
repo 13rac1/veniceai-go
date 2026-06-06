@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/13rac1/veniceai-go/api"
+	"github.com/13rac1/veniceai-go/venicegen"
 	openai "github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
 )
@@ -25,7 +25,7 @@ type Client struct {
 	OpenAI openai.Client
 
 	// API provides access to all Venice API endpoints via the generated client.
-	API *api.ClientWithResponses
+	API *venicegen.ClientWithResponses
 }
 
 type clientConfig struct {
@@ -65,9 +65,9 @@ func NewClient(apiKey string, opts ...Option) (*Client, error) {
 	}
 
 	// Build generated Venice API client with Bearer auth.
-	apiClient, err := api.NewClientWithResponses(cfg.baseURL,
-		api.WithHTTPClient(cfg.httpClient),
-		api.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
+	apiClient, err := venicegen.NewClientWithResponses(cfg.baseURL,
+		venicegen.WithHTTPClient(cfg.httpClient),
+		venicegen.WithRequestEditorFn(func(_ context.Context, req *http.Request) error {
 			req.Header.Set("Authorization", "Bearer "+apiKey)
 			return nil
 		}),

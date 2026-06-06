@@ -1,5 +1,5 @@
-package: api
-output: api/api.gen.go
+package: venicegen
+output: venicegen/venicegen.gen.go
 generate:
   models: true
   client: true

@@ -1,6 +1,6 @@
 # veniceai-go
 
-Go client for the [Venice.ai API](https://docs.venice.ai). Composes the official [openai-go](https://github.com/openai/openai-go) client for OpenAI-compatible endpoints with a generated client covering all Venice-specific endpoints.
+Go client for the [Venice.ai API](https://docs.veniceai.ai). Composes the official [openai-go](https://github.com/openai/openai-go) client for OpenAI-compatible endpoints with a generated client covering all Venice-specific endpoints.
 
 ## Install
 
@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"log"
 
-	veniceai "github.com/13rac1/veniceai-go"
-	"github.com/13rac1/veniceai-go/api"
+	"github.com/13rac1/veniceai-go"
+	"github.com/13rac1/veniceai-go/venicegen"
 	openai "github.com/openai/openai-go/v3"
 )
 
@@ -42,8 +42,8 @@ func main() {
 	}
 	fmt.Println(chat.Choices[0].Message.Content)
 
-	// Venice-specific endpoints use generated types from the api package
-	resp, err := client.API.GenerateImageWithResponse(ctx, nil, api.GenerateImageJSONRequestBody{
+	// Venice-specific endpoints use generated types from the venicegen package
+	resp, err := client.API.GenerateImageWithResponse(ctx, nil, venicegen.GenerateImageJSONRequestBody{
 		Model:  "fluently-xl",
 		Prompt: "a cat in space",
 	})
