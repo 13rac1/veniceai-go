@@ -30,17 +30,35 @@ func main() {
 	}
 	ctx := context.Background()
 
-	// OpenAI-compatible endpoints (chat, embeddings, audio, images, models)
-	chat, err := client.OpenAI.Chat.Completions.New(ctx, openai.ChatCompletionNewParams{
+	// Chat completion with Venice parameters and response headers
+	result, err := client.ChatComplete(ctx, &openai.ChatCompletionNewParams{
 		Model: "llama-3.3-70b",
 		Messages: []openai.ChatCompletionMessageParamUnion{
 			openai.UserMessage("Hello from Venice!"),
 		},
+	}, &veniceai.VeniceParameters{
+		EnableWebSearch:           veniceai.Ptr(veniceai.WebSearchOn),
+		IncludeVeniceSystemPrompt: veniceai.Ptr(false),
 	})
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(chat.Choices[0].Message.Content)
+	fmt.Println(result.Choices[0].Message.Content)
+	fmt.Println("Balance:", result.Headers.BalanceDiem)
+
+	// Streaming with Venice parameters
+	stream := client.ChatCompleteStream(ctx, &openai.ChatCompletionNewParams{
+		Model: "llama-3.3-70b",
+		Messages: []openai.ChatCompletionMessageParamUnion{
+			openai.UserMessage("Tell me about Venice"),
+		},
+	}, nil) // nil = no Venice-specific params
+	for stream.Next() {
+		fmt.Print(stream.Current().Choices[0].Delta.Content)
+	}
+	if err := stream.Err(); err != nil {
+		log.Fatal(err)
+	}
 
 	// Venice-specific endpoints use generated types from the venicegen package
 	resp, err := client.API.GenerateImageWithResponse(ctx, nil, venicegen.GenerateImageJSONRequestBody{

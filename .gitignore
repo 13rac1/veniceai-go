@@ -4,3 +4,4 @@
 *.pem
 .swagger-patched.yaml
 .DS_Store
+cover.out
